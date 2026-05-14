@@ -1,20 +1,24 @@
 // Package qwen wraps the upstream chat.qwen.ai HTTP/SSE protocol.
 package qwen
 
-// Message is a single chat turn sent upstream.
+// Message is a single chat turn sent upstream. Upstream requires `extra`
+// (object) and `feature_config` (with `output_schema` and `thinking_enabled`)
+// on every message — leaving them out yields a 400 Bad_Request.
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 	// ChatType pins the per-message chat type (Qwen extension). Optional.
 	ChatType string `json:"chat_type,omitempty"`
+	// Extra is required by upstream (even if empty).
+	Extra map[string]interface{} `json:"extra"`
 	// FeatureConfig.thinking_enabled toggles the thinking mode for that turn.
-	FeatureConfig *FeatureConfig `json:"feature_config,omitempty"`
+	FeatureConfig *FeatureConfig `json:"feature_config"`
 }
 
 // FeatureConfig matches the upstream `feature_config` schema.
 type FeatureConfig struct {
 	ThinkingEnabled bool   `json:"thinking_enabled"`
-	OutputSchema    string `json:"output_schema,omitempty"`
+	OutputSchema    string `json:"output_schema"`
 }
 
 // CompletionRequest is the payload sent to /api/v2/chat/completions.
