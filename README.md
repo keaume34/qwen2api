@@ -153,7 +153,7 @@ gofmt -l .
 go test ./...
 ```
 
-CI (GitHub Actions) runs the same gates on every PR.
+A reference GitHub Actions workflow lives at [`docs/ci.yml.example`](docs/ci.yml.example) — copy it to `.github/workflows/ci.yml` to run the same gates on every PR.
 
 ## Deploy on Vercel
 
