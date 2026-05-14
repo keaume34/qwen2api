@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  qwen2api:
+    build: .
+    image: qwen2api:local
+    container_name: qwen2api
+    restart: unless-stopped
+    ports:
+      - "${QWEN2API_HOST_PORT:-5001}:5001"
+    environment:
+      - QWEN2API_PORT=5001
+      - QWEN2API_API_KEY=${QWEN2API_API_KEY:-}
+      - QWEN2API_TOKENS=${QWEN2API_TOKENS:-}
+      - QWEN2API_BASE_URL=${QWEN2API_BASE_URL:-https://chat.qwen.ai}
+      - QWEN2API_LOG_LEVEL=${QWEN2API_LOG_LEVEL:-info}

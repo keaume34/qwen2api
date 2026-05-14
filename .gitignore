@@ -1,0 +1,21 @@
+# Build artifacts
+/qwen2api
+/dist/
+*.exe
+*.test
+*.out
+
+# Local config / secrets
+config.json
+.env
+.env.local
+
+# Node helper deps
+scripts/node_modules/
+scripts/package-lock.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
