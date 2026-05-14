@@ -88,20 +88,17 @@ func buildQwenRequest(req openai.ChatRequest) qwen.CompletionRequest {
 	}
 
 	msgs := make([]qwen.Message, 0, len(req.Messages))
-	for i, m := range req.Messages {
-		qm := qwen.Message{
+	for _, m := range req.Messages {
+		msgs = append(msgs, qwen.Message{
 			Role:     m.Role,
 			Content:  m.Text(),
 			ChatType: chatType,
-		}
-		// Only the last user message in the conversation triggers the
-		// `feature_config.thinking_enabled` toggle upstream — but mirroring
-		// it on every message is harmless and matches the reference clients.
-		_ = i
-		if thinkingEnabled {
-			qm.FeatureConfig = &qwen.FeatureConfig{ThinkingEnabled: true}
-		}
-		msgs = append(msgs, qm)
+			Extra:    map[string]interface{}{},
+			FeatureConfig: &qwen.FeatureConfig{
+				OutputSchema:    "phase",
+				ThinkingEnabled: thinkingEnabled,
+			},
+		})
 	}
 
 	return qwen.CompletionRequest{

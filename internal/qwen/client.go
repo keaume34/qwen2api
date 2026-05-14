@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // ClientConfig configures the upstream HTTP client.
@@ -52,29 +54,34 @@ func NewClient(cfg ClientConfig) *Client {
 	}
 }
 
-// applyHeaders adds the standard set of headers expected by chat.qwen.ai.
+// applyHeaders adds the standard set of headers expected by chat.qwen.ai. The
+// upstream is strict about `Version`, `source` and a few sec-fetch hints — without
+// them /api/v2/chat/completions returns 400 Bad_Request even with a valid token.
 func (c *Client) applyHeaders(req *http.Request, token string) {
+	origin := strings.TrimRight(c.cfg.BaseURL, "/")
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("User-Agent", c.cfg.UserAgent)
 	req.Header.Set("Accept", "application/json, text/event-stream")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Origin", strings.TrimRight(c.cfg.BaseURL, "/"))
-	req.Header.Set("Referer", strings.TrimRight(c.cfg.BaseURL, "/")+"/")
+	req.Header.Set("Origin", origin)
+	req.Header.Set("Referer", origin+"/")
 	req.Header.Set("Sec-Fetch-Site", "same-origin")
 	req.Header.Set("Sec-Fetch-Mode", "cors")
 	req.Header.Set("Sec-Fetch-Dest", "empty")
 	req.Header.Set("source", "web")
-	if c.cfg.SsxmodItna != "" || c.cfg.Ssxmodi2 != "" {
-		cookies := []string{}
-		if c.cfg.SsxmodItna != "" {
-			cookies = append(cookies, "ssxmod_itna="+c.cfg.SsxmodItna)
-		}
-		if c.cfg.Ssxmodi2 != "" {
-			cookies = append(cookies, "ssxmod_itna2="+c.cfg.Ssxmodi2)
-		}
-		req.Header.Set("Cookie", strings.Join(cookies, "; "))
+	req.Header.Set("Version", "0.2.50")
+	req.Header.Set("bx-v", "2.5.36")
+	req.Header.Set("Timezone", time.Now().Format("Mon Jan 02 2006 15:04:05 GMT-0700"))
+	req.Header.Set("X-Request-Id", uuid.NewString())
+	cookies := []string{"token=" + token}
+	if c.cfg.SsxmodItna != "" {
+		cookies = append(cookies, "ssxmod_itna="+c.cfg.SsxmodItna)
 	}
+	if c.cfg.Ssxmodi2 != "" {
+		cookies = append(cookies, "ssxmod_itna2="+c.cfg.Ssxmodi2)
+	}
+	req.Header.Set("Cookie", strings.Join(cookies, "; "))
 }
 
 // Models fetches the dynamic model list. Returns the raw JSON for direct
